@@ -11,8 +11,14 @@ const TicketForm = () => {
 
   const [errors, setErrors] = useState({});
 
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    // Allow only digits in mobile field
+    if (name === "mobile" && !/^\d{0,10}$/.test(value)) return;
+
+    setFormData({ ...formData, [name]: value });
+  };
 
   const validate = () => {
     const newErrors = {};
@@ -46,6 +52,7 @@ const TicketForm = () => {
       const data = await res.text();
       console.log("Server response:", data);
       alert("Ticket Submitted. Check your email!");
+
       setFormData({ name: "", mobile: "", email: "", category: "" });
       setErrors({});
     } catch (err) {
@@ -68,7 +75,10 @@ const TicketForm = () => {
 
       <input
         name="mobile"
-        placeholder="Mobile"
+        type="tel"
+        pattern="[0-9]{10}"
+        inputMode="numeric"
+        placeholder="Mobile (10 digits)"
         value={formData.mobile}
         onChange={handleChange}
       />
@@ -76,6 +86,7 @@ const TicketForm = () => {
 
       <input
         name="email"
+        type="email"
         placeholder="Email"
         value={formData.email}
         onChange={handleChange}
