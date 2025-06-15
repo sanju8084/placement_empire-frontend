@@ -20,7 +20,7 @@ const TicketForm = () => {
 
     setFormData({ ...formData, [name]: value });
 
-    // Live validation clear
+    // Clear validation error on change
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
@@ -51,16 +51,19 @@ const TicketForm = () => {
     setSubmitting(true);
 
     try {
-const res = await fetch(`http://192.168.0.102:5000/api/tickets`, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(formData),
-});
+            // const res = await fetch("http://localhost:5000/api/tickets", {
+const res = await fetch("http:// 192.168.58.216:5000/api/tickets", {
+
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
       const text = await res.text();
 
       if (!res.ok) {
         console.error("Backend error:", text);
-        alert("Error: " + text);
+        alert("Server error: " + text); // This runs on 500 internal error etc.
         return;
       }
 
@@ -68,8 +71,8 @@ const res = await fetch(`http://192.168.0.102:5000/api/tickets`, {
       setFormData({ name: "", mobile: "", email: "", category: "" });
       setErrors({});
     } catch (err) {
-      console.error("Request failed:", err);
-      alert("Network or server error!");
+      console.error("Request failed:", err.message);
+      alert("Network or server error!"); // This shows for no connection / mobile failure
     } finally {
       setSubmitting(false);
     }
