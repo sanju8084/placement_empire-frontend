@@ -10,14 +10,20 @@ const TicketForm = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // Allow only digits in mobile field
+    // Prevent more than 10 digits
     if (name === "mobile" && !/^\d{0,10}$/.test(value)) return;
 
     setFormData({ ...formData, [name]: value });
+
+    // Live validation clear
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
   const validate = () => {
@@ -35,34 +41,42 @@ const TicketForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const validationErrors = validate();
+
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
 
+    setSubmitting(true);
+
     try {
-      const res = await fetch("http://localhost:5000/api/tickets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+const res = await fetch(`http://localhost:5000/api/tickets`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(formData),
+});
+      const text = await res.text();
 
-      const data = await res.text();
-      console.log("Server response:", data);
+      if (!res.ok) {
+        console.error("Backend error:", text);
+        alert("Error: " + text);
+        return;
+      }
+
       alert("Ticket Submitted. Check your email!");
-
       setFormData({ name: "", mobile: "", email: "", category: "" });
       setErrors({});
     } catch (err) {
-      console.error("Form submission failed:", err);
-      alert("Something went wrong!");
+      console.error("Request failed:", err);
+      alert("Network or server error!");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="ticket-form">
+    <form onSubmit={handleSubmit} className="ticket-form" noValidate>
       <h2>Generate Ticket</h2>
 
       <input
@@ -70,30 +84,37 @@ const TicketForm = () => {
         placeholder="Name"
         value={formData.name}
         onChange={handleChange}
+        className={errors.name ? "invalid" : ""}
       />
       {errors.name && <p className="error">{errors.name}</p>}
 
       <input
         name="mobile"
-        type="tel"
-        pattern="[0-9]{10}"
-        inputMode="numeric"
         placeholder="Mobile (10 digits)"
         value={formData.mobile}
         onChange={handleChange}
+        type="tel"
+        inputMode="numeric"
+        className={errors.mobile ? "invalid" : ""}
       />
       {errors.mobile && <p className="error">{errors.mobile}</p>}
 
       <input
         name="email"
-        type="email"
         placeholder="Email"
         value={formData.email}
         onChange={handleChange}
+        type="email"
+        className={errors.email ? "invalid" : ""}
       />
       {errors.email && <p className="error">{errors.email}</p>}
 
-      <select name="category" value={formData.category} onChange={handleChange}>
+      <select
+        name="category"
+        value={formData.category}
+        onChange={handleChange}
+        className={errors.category ? "invalid" : ""}
+      >
         <option value="">Select Category</option>
         <option value="Coding">Coding</option>
         <option value="Design">Design</option>
@@ -101,7 +122,9 @@ const TicketForm = () => {
       </select>
       {errors.category && <p className="error">{errors.category}</p>}
 
-      <button type="submit">Send Ticket</button>
+      <button type="submit" disabled={submitting}>
+        {submitting ? "Sending..." : "Send Ticket"}
+      </button>
     </form>
   );
 };

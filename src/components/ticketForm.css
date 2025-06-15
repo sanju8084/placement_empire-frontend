@@ -40,9 +40,12 @@
 }
 .error {
   color: red;
-  font-size: 0.9em;
-  margin-top: -10px;
-  margin-bottom: 10px;
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
+.invalid {
+  border-color: red;
 }
 
 @media (max-width: 480px) {
