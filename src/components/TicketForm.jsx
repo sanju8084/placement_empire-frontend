@@ -51,7 +51,7 @@ const TicketForm = () => {
     setSubmitting(true);
 
     try {
-            const res = await fetch("http://localhost:5000/api/tickets", {
+            const res = await fetch("https://placement-empire-backend-1.onrender.com/api/tickets", {
 // const res = await fetch("http:// 192.168.58.216:5000/api/tickets", {
 
         method: "POST",
