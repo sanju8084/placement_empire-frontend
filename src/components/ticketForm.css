@@ -1,4 +1,4 @@
-.ticket-form {
+ .ticket-form {
   width: 90%;
   max-width: 400px;
   margin: 100px auto;
@@ -64,4 +64,5 @@
     font-size: 0.95rem;
     padding: 10px;
   }
-}
+} 
+

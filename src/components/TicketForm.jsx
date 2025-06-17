@@ -51,8 +51,8 @@ const TicketForm = () => {
     setSubmitting(true);
 
     try {
-            // const res = await fetch("http://localhost:5000/api/tickets", {
-const res = await fetch("http:// 192.168.58.216:5000/api/tickets", {
+            const res = await fetch("http://localhost:5000/api/tickets", {
+// const res = await fetch("http:// 192.168.58.216:5000/api/tickets", {
 
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -119,9 +119,9 @@ const res = await fetch("http:// 192.168.58.216:5000/api/tickets", {
         className={errors.category ? "invalid" : ""}
       >
         <option value="">Select Category</option>
-        <option value="Coding">Coding</option>
-        <option value="Design">Design</option>
-        <option value="Robotics">Robotics</option>
+        <option value="Tech job">Tech Job</option>
+        <option value="Non Tech Job">Non Tech Job</option>
+        <option value="Un Skilled Job">Unskilled Job</option>
       </select>
       {errors.category && <p className="error">{errors.category}</p>}
 
@@ -133,3 +133,5 @@ const res = await fetch("http:// 192.168.58.216:5000/api/tickets", {
 };
 
 export default TicketForm;
+
+
