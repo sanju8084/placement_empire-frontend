@@ -57,7 +57,7 @@ const TicketForm = () => {
         paymentStatus: status,
       };
 
-      const response = await fetch("http://localhost:5000/api/tickets", {
+      const response = await fetch("https://placement-empire-backend-1.onrender.com/api/tickets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(ticketData),
