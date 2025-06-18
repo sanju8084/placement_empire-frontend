@@ -1,26 +1,46 @@
 import React, { useState } from "react";
 import "../components/ticketForm.css";
 
+const categoryPrices = {
+  "Tech Job": 1500,
+  "Non Tech Job": 1000,
+  "Unskilled Job": 500,
+};
+
 const TicketForm = () => {
   const [formData, setFormData] = useState({
     name: "",
     mobile: "",
     email: "",
     category: "",
+    price: "",
   });
 
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // Prevent more than 10 digits
     if (name === "mobile" && !/^\d{0,10}$/.test(value)) return;
 
-    setFormData({ ...formData, [name]: value });
+    if (name === "category") {
+      const selectedPrice = categoryPrices[value] || "";
+      setFormData({ ...formData, [name]: value, price: selectedPrice });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
 
-    // Clear validation error on change
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
@@ -42,37 +62,70 @@ const TicketForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
-
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
+      return;
+    }
+
+    const loaded = await loadRazorpayScript();
+    if (!loaded) {
+      alert("Razorpay SDK failed to load.");
       return;
     }
 
     setSubmitting(true);
 
     try {
-            const res = await fetch("http://localhost:5000/api/tickets", {
-// const res = await fetch("http:// 192.168.58.216:5000/api/tickets", {
-
+      const res = await fetch("http://localhost:5000/api/payment/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ amount: formData.price }),
       });
 
-      const text = await res.text();
+      const orderData = await res.json();
 
-      if (!res.ok) {
-        console.error("Backend error:", text);
-        alert("Server error: " + text); // This runs on 500 internal error etc.
-        return;
-      }
+      const options = {
+        key: process.env.REACT_APP_RAZORPAY_KEY || "RAZORPAY_KEY_ID", // or use env
+        amount: orderData.amount,
+        currency: "INR",
+        name: "Placement Empire",
+        description: `Payment for ${formData.category}`,
+        order_id: orderData.id,
+        handler: async function (response) {
+          const finalData = {
+            ...formData,
+            razorpay_payment_id: response.razorpay_payment_id,
+          };
 
-      alert("Ticket Submitted. Check your email!");
-      setFormData({ name: "", mobile: "", email: "", category: "" });
-      setErrors({});
+          const ticketRes = await fetch("http://localhost:5000/api/tickets", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(finalData),
+          });
+
+          if (!ticketRes.ok) {
+            const ticketText = await ticketRes.text();
+            alert("Ticket error: " + ticketText);
+            return;
+          }
+
+          alert("Payment successful. Ticket sent to your email.");
+          setFormData({ name: "", mobile: "", email: "", category: "", price: "" });
+          setErrors({});
+        },
+        prefill: {
+          name: formData.name,
+          email: formData.email,
+          contact: formData.mobile,
+        },
+        theme: { color: "#00bfa6" },
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
     } catch (err) {
-      console.error("Request failed:", err.message);
-      alert("Network or server error!"); // This shows for no connection / mobile failure
+      console.error("Payment error:", err.message);
+      alert("Something went wrong.");
     } finally {
       setSubmitting(false);
     }
@@ -82,56 +135,28 @@ const TicketForm = () => {
     <form onSubmit={handleSubmit} className="ticket-form" noValidate>
       <h2>Generate Ticket</h2>
 
-      <input
-        name="name"
-        placeholder="Name"
-        value={formData.name}
-        onChange={handleChange}
-        className={errors.name ? "invalid" : ""}
-      />
+      <input name="name" placeholder="Name" value={formData.name} onChange={handleChange} className={errors.name ? "invalid" : ""} />
       {errors.name && <p className="error">{errors.name}</p>}
 
-      <input
-        name="mobile"
-        placeholder="Mobile (10 digits)"
-        value={formData.mobile}
-        onChange={handleChange}
-        type="tel"
-        inputMode="numeric"
-        className={errors.mobile ? "invalid" : ""}
-      />
+      <input name="mobile" placeholder="Mobile (10 digits)" value={formData.mobile} onChange={handleChange} type="tel" className={errors.mobile ? "invalid" : ""} />
       {errors.mobile && <p className="error">{errors.mobile}</p>}
 
-      <input
-        name="email"
-        placeholder="Email"
-        value={formData.email}
-        onChange={handleChange}
-        type="email"
-        className={errors.email ? "invalid" : ""}
-      />
+      <input name="email" placeholder="Email" value={formData.email} onChange={handleChange} type="email" className={errors.email ? "invalid" : ""} />
       {errors.email && <p className="error">{errors.email}</p>}
 
-      <select
-        name="category"
-        value={formData.category}
-        onChange={handleChange}
-        className={errors.category ? "invalid" : ""}
-      >
+      <select name="category" value={formData.category} onChange={handleChange} className={errors.category ? "invalid" : ""}>
         <option value="">Select Category</option>
-        <option value="Tech job">Tech Job</option>
-        <option value="Non Tech Job">Non Tech Job</option>
-        <option value="Un Skilled Job">Unskilled Job</option>
+        {Object.keys(categoryPrices).map((category) => (
+          <option key={category} value={category}>{`${category} (₹${categoryPrices[category]})`}</option>
+        ))}
       </select>
       {errors.category && <p className="error">{errors.category}</p>}
 
-      <button type="submit" disabled={submitting}>
-        {submitting ? "Sending..." : "Send Ticket"}
-      </button>
+      {formData.price && <p className="price-display">Price: ₹{formData.price}</p>}
+
+      <button type="submit" disabled={submitting}>{submitting ? "Processing..." : "Pay & Submit"}</button>
     </form>
   );
 };
 
 export default TicketForm;
-
-
