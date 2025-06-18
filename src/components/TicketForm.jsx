@@ -76,7 +76,13 @@ const TicketForm = () => {
     setSubmitting(true);
 
     try {
+<<<<<<< HEAD
       const res = await fetch("http://localhost:5000/api/payment/create-order", {
+=======
+            const res = await fetch("https://placement-empire-backend-1.onrender.com/api/tickets", {
+// const res = await fetch("http:// 192.168.58.216:5000/api/tickets", {
+
+>>>>>>> 87db2b19d767225d5c62b3f8d173801f6d9849e2
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount: formData.price }),
