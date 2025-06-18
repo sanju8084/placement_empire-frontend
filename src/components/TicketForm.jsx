@@ -15,19 +15,9 @@ const TicketForm = () => {
     category: "",
     price: "",
   });
-
+  const [paymentStatus, setPaymentStatus] = useState("Not Done");
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
-
-  const loadRazorpayScript = () => {
-    return new Promise((resolve) => {
-      const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -59,86 +49,58 @@ const TicketForm = () => {
     return newErrors;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const submitTicket = async (paymentId = null, status = "Not Done") => {
+    try {
+      const ticketData = {
+        ...formData,
+        razorpay_payment_id: paymentId || "",
+        paymentStatus: status,
+      };
+
+      const response = await fetch("http://localhost:5000/api/tickets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(ticketData),
+      });
+
+      if (!response.ok) {
+        const err = await response.text();
+        alert("Ticket generation failed: " + err);
+        return;
+      }
+
+      alert("Ticket submitted. Check your email.");
+      setFormData({ name: "", mobile: "", email: "", category: "", price: "" });
+      setErrors({});
+      setPaymentStatus("Not Done");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to submit ticket.");
+    }
+  };
+
+  const handlePayment = async () => {
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
 
-    const loaded = await loadRazorpayScript();
-    if (!loaded) {
-      alert("Razorpay SDK failed to load.");
+    // Temporarily disable payment logic, just show message
+    alert("Payment integration is currently disabled. You can still generate a ticket without payment.");
+  };
+
+  const handleGenerateWithoutPayment = async () => {
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       return;
     }
-
-    setSubmitting(true);
-
-    try {
-<<<<<<< HEAD
-      const res = await fetch("http://localhost:5000/api/payment/create-order", {
-=======
-            const res = await fetch("https://placement-empire-backend-1.onrender.com/api/tickets", {
-// const res = await fetch("http:// 192.168.58.216:5000/api/tickets", {
-
->>>>>>> 87db2b19d767225d5c62b3f8d173801f6d9849e2
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: formData.price }),
-      });
-
-      const orderData = await res.json();
-
-      const options = {
-        key: process.env.REACT_APP_RAZORPAY_KEY || "RAZORPAY_KEY_ID", // or use env
-        amount: orderData.amount,
-        currency: "INR",
-        name: "Placement Empire",
-        description: `Payment for ${formData.category}`,
-        order_id: orderData.id,
-        handler: async function (response) {
-          const finalData = {
-            ...formData,
-            razorpay_payment_id: response.razorpay_payment_id,
-          };
-
-          const ticketRes = await fetch("http://localhost:5000/api/tickets", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(finalData),
-          });
-
-          if (!ticketRes.ok) {
-            const ticketText = await ticketRes.text();
-            alert("Ticket error: " + ticketText);
-            return;
-          }
-
-          alert("Payment successful. Ticket sent to your email.");
-          setFormData({ name: "", mobile: "", email: "", category: "", price: "" });
-          setErrors({});
-        },
-        prefill: {
-          name: formData.name,
-          email: formData.email,
-          contact: formData.mobile,
-        },
-        theme: { color: "#00bfa6" },
-      };
-
-      const paymentObject = new window.Razorpay(options);
-      paymentObject.open();
-    } catch (err) {
-      console.error("Payment error:", err.message);
-      alert("Something went wrong.");
-    } finally {
-      setSubmitting(false);
-    }
+    await submitTicket(null, "Not Done");
   };
 
   return (
-    <form onSubmit={handleSubmit} className="ticket-form" noValidate>
+    <form className="ticket-form" noValidate>
       <h2>Generate Ticket</h2>
 
       <input name="name" placeholder="Name" value={formData.name} onChange={handleChange} className={errors.name ? "invalid" : ""} />
@@ -160,7 +122,13 @@ const TicketForm = () => {
 
       {formData.price && <p className="price-display">Price: ₹{formData.price}</p>}
 
-      <button type="submit" disabled={submitting}>{submitting ? "Processing..." : "Pay & Submit"}</button>
+      <button type="button" onClick={handlePayment} disabled={submitting}>
+        Pay & Submit (Coming Soon)
+      </button>
+
+      <button type="button" onClick={handleGenerateWithoutPayment} className="secondary-button">
+        Generate Ticket without Payment
+      </button>
     </form>
   );
 };
