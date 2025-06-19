@@ -6,7 +6,7 @@ const Admin = () => {
 
   const fetchTickets = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/admin/tickets");
+      const res = await fetch("https://placement-empire-backend-1.onrender.com/api/admin/tickets");
       const data = await res.json();
       setTickets(data);
     } catch (error) {
