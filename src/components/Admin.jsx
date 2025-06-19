@@ -17,7 +17,7 @@ const Admin = () => {
   const deleteTicket = async (id) => {
     if (!window.confirm("Are you sure you want to delete this ticket?")) return;
     try {
-      await fetch(`http://localhost:5000/api/admin/tickets/${id}`, {
+      await fetch(`https://placement-empire-backend-1.onrender.com/api/admin/tickets/${id}`, {
         method: "DELETE",
       });
       setTickets(tickets.filter((t) => t._id !== id));
