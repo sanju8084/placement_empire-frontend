@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../components/ticketForm.css";
 
 const categoryPrices = {
@@ -15,9 +15,15 @@ const TicketForm = () => {
     category: "",
     price: "",
   });
-  const [paymentStatus, setPaymentStatus] = useState("Not Done");
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,9 +32,9 @@ const TicketForm = () => {
 
     if (name === "category") {
       const selectedPrice = categoryPrices[value] || "";
-      setFormData({ ...formData, [name]: value, price: selectedPrice });
+      setFormData((prev) => ({ ...prev, category: value, price: selectedPrice }));
     } else {
-      setFormData({ ...formData, [name]: value });
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
 
     if (errors[name]) {
@@ -38,18 +44,14 @@ const TicketForm = () => {
 
   const validate = () => {
     const newErrors = {};
-    const mobileRegex = /^[0-9]{10}$/;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
     if (!formData.name.trim()) newErrors.name = "Name is required";
-    if (!mobileRegex.test(formData.mobile)) newErrors.mobile = "Mobile must be 10 digits";
-    if (!emailRegex.test(formData.email)) newErrors.email = "Enter a valid email";
+    if (!/^[0-9]{10}$/.test(formData.mobile)) newErrors.mobile = "Mobile must be 10 digits";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = "Enter a valid email";
     if (!formData.category) newErrors.category = "Select a category";
-
     return newErrors;
   };
 
-  const submitTicket = async (paymentId = null, status = "Not Done") => {
+  const submitTicket = async (paymentId, status = "Done") => {
     try {
       const ticketData = {
         ...formData,
@@ -69,12 +71,11 @@ const TicketForm = () => {
         return;
       }
 
-      alert("Ticket submitted. Check your email.");
+      alert("Ticket submitted successfully. Please check your email.");
       setFormData({ name: "", mobile: "", email: "", category: "", price: "" });
       setErrors({});
-      setPaymentStatus("Not Done");
     } catch (error) {
-      console.error(error);
+      console.error("Submit ticket error:", error);
       alert("Failed to submit ticket.");
     }
   };
@@ -86,36 +87,101 @@ const TicketForm = () => {
       return;
     }
 
-    // Temporarily disable payment logic, just show message
-    alert("Payment integration is currently disabled. You can still generate a ticket without payment.");
-  };
+    try {
+      setSubmitting(true);
+      const res = await fetch("http://localhost:5000/api/payment/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: formData.price }),
+      });
 
-  const handleGenerateWithoutPayment = async () => {
-    const validationErrors = validate();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
+      const data = await res.json();
+
+      if (!data || !data.id) {
+        alert("Invalid Razorpay order response.");
+        return;
+      }
+
+      const options = {
+        key: "rzp_test_UaBnVFB3C4EDxK", // Use your actual Razorpay test/live key
+        amount: data.amount,
+        currency: "INR",
+        name: "Placement Empire",
+        description: "Job Ticket Payment",
+        order_id: data.id,
+        handler: async function (response) {
+          await submitTicket(response.razorpay_payment_id, "Done");
+        },
+        prefill: {
+          name: formData.name,
+          email: formData.email,
+          contact: formData.mobile,
+        },
+        theme: {
+          color: "#00bfa6",
+        },
+        modal: {
+          ondismiss: () => {
+            setSubmitting(false);
+            alert("Payment cancelled. Ticket not submitted.");
+          },
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } catch (error) {
+      console.error("Payment error:", error);
+      alert("Payment could not be initiated. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
-    await submitTicket(null, "Not Done");
   };
 
   return (
     <form className="ticket-form" noValidate>
       <h2>Generate Ticket</h2>
 
-      <input name="name" placeholder="Name" value={formData.name} onChange={handleChange} className={errors.name ? "invalid" : ""} />
+      <input
+        name="name"
+        placeholder="Name"
+        value={formData.name}
+        onChange={handleChange}
+        className={errors.name ? "invalid" : ""}
+      />
       {errors.name && <p className="error">{errors.name}</p>}
 
-      <input name="mobile" placeholder="Mobile (10 digits)" value={formData.mobile} onChange={handleChange} type="tel" className={errors.mobile ? "invalid" : ""} />
+      <input
+        name="mobile"
+        placeholder="Mobile (10 digits)"
+        value={formData.mobile}
+        onChange={handleChange}
+        type="tel"
+        className={errors.mobile ? "invalid" : ""}
+      />
       {errors.mobile && <p className="error">{errors.mobile}</p>}
 
-      <input name="email" placeholder="Email" value={formData.email} onChange={handleChange} type="email" className={errors.email ? "invalid" : ""} />
+      <input
+        name="email"
+        placeholder="Email"
+        value={formData.email}
+        onChange={handleChange}
+        type="email"
+        className={errors.email ? "invalid" : ""}
+      />
       {errors.email && <p className="error">{errors.email}</p>}
 
-      <select name="category" value={formData.category} onChange={handleChange} className={errors.category ? "invalid" : ""}>
+      <select
+        name="category"
+        value={formData.category}
+        onChange={handleChange}
+        className={errors.category ? "invalid" : ""}
+      >
         <option value="">Select Category</option>
         {Object.keys(categoryPrices).map((category) => (
-          <option key={category} value={category}>{`${category} (₹${categoryPrices[category]})`}</option>
+          <option key={category} value={category}>
+            {`${category} (₹${categoryPrices[category]})`}
+          </option>
         ))}
       </select>
       {errors.category && <p className="error">{errors.category}</p>}
@@ -123,11 +189,7 @@ const TicketForm = () => {
       {formData.price && <p className="price-display">Price: ₹{formData.price}</p>}
 
       <button type="button" onClick={handlePayment} disabled={submitting}>
-        Pay & Submit (Coming Soon)
-      </button>
-
-      <button type="button" onClick={handleGenerateWithoutPayment} className="secondary-button">
-        Generate Ticket without Payment
+        {submitting ? "Processing..." : "Pay & Submit"}
       </button>
     </form>
   );

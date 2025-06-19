@@ -86,3 +86,70 @@
   background-color: #aaa;
   cursor: not-allowed;
 }
+
+
+/* ticketForm.css */
+
+.ticket-form {
+  max-width: 600px;
+  margin: 0 auto;
+  background: #fefefe;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.ticket-form h2 {
+  margin-bottom: 20px;
+  color: #00bfa6;
+  text-align: center;
+}
+
+.ticket-form input,
+.ticket-form select {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.ticket-form button {
+  width: 100%;
+  padding: 14px;
+  background-color: #00bfa6;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.ticket-form button:hover {
+  background-color: #009e8c;
+}
+
+.price-display {
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.error {
+  color: red;
+  font-size: 14px;
+  margin-top: -8px;
+  margin-bottom: 10px;
+}
+
+.invalid {
+  border-color: red;
+}
+
+@media (max-width: 480px) {
+  .ticket-form {
+    padding: 20px;
+  }
+}
