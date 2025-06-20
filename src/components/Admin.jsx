@@ -65,6 +65,7 @@ const Admin = () => {
           </tbody>
         </table>
       </div>
+
       <button
         style={{ marginBottom: "10px" }}
         onClick={() => {
