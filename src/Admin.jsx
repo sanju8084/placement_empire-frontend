@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import "./admin.css"; // Create a CSS file for styling
+import "./admin.css";
 
 const Admin = () => {
   const [tickets, setTickets] = useState([]);
 
   const fetchTickets = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/admin/tickets");
+      const res = await fetch("https://placement-empire-backend-1.onrender.com/api/admin/tickets");
       const data = await res.json();
       setTickets(data);
     } catch (error) {
@@ -17,7 +17,7 @@ const Admin = () => {
   const deleteTicket = async (id) => {
     if (!window.confirm("Are you sure you want to delete this ticket?")) return;
     try {
-      await fetch(`http://localhost:5000/api/admin/tickets/${id}`, {
+      await fetch(`https://placement-empire-backend-1.onrender.com/api/admin/tickets/${id}`, {
         method: "DELETE",
       });
       setTickets(tickets.filter((t) => t._id !== id));
@@ -34,50 +34,47 @@ const Admin = () => {
     <div className="admin-panel">
       <h2>Admin Panel - Ticket Management</h2>
       <div className="table-wrapper">
-
-      <table className="ticket-table">
-        <thead>
-          <tr>
-            <th>Ticket No</th>
-            <th>Name</th>
-            <th>Mobile</th>
-            <th>Email</th>
-            <th>Category</th>
-            <th>Price</th>
-            <th>Payment</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tickets.map((ticket) => (
-            <tr key={ticket._id}>
-              <td>{ticket.ticketNo}</td>
-              <td>{ticket.name}</td>
-              <td>{ticket.mobile}</td>
-              <td>{ticket.email}</td>
-              <td>{ticket.category}</td>
-              <td>₹{ticket.price}</td>
-              <td>{ticket.paymentStatus || "N/A"}</td>
-              <td>
-                <button onClick={() => deleteTicket(ticket._id)}>Delete</button>
-              </td>
+        <table className="ticket-table">
+          <thead>
+            <tr>
+              <th>Ticket No</th>
+              <th>Name</th>
+              <th>Mobile</th>
+              <th>Email</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Payment</th>
+              <th>Action</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-
+          </thead>
+          <tbody>
+            {tickets.map((ticket) => (
+              <tr key={ticket._id}>
+                <td>{ticket.ticketNo}</td>
+                <td>{ticket.name}</td>
+                <td>{ticket.mobile}</td>
+                <td>{ticket.email}</td>
+                <td>{ticket.category}</td>
+                <td>₹{ticket.price}</td>
+                <td>{ticket.paymentStatus || "N/A"}</td>
+                <td>
+                  <button onClick={() => deleteTicket(ticket._id)}>Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       <button
-  style={{ marginBottom: "10px" }}
-  onClick={() => {
-    localStorage.removeItem("isAdmin");
-    window.location.reload();
-  }}
->
-  Logout
-</button>
-
+        style={{ marginBottom: "10px" }}
+        onClick={() => {
+          localStorage.removeItem("isAdmin");
+          window.location.reload();
+        }}
+      >
+        Logout
+      </button>
     </div>
   );
 };
