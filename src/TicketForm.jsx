@@ -207,7 +207,7 @@ const categoryPrices = {
   "Unskilled Job": 500,
 };
 
-const upiId = "sankayush@okaxis";
+const upiId = "7079887439@jio";
 const payeeName = "Placement Empire";
 
 const TicketForm = () => {
@@ -219,6 +219,7 @@ const TicketForm = () => {
     price: "",
     screenshot: null,
   });
+
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -250,6 +251,22 @@ const TicketForm = () => {
     return newErrors;
   };
 
+  const handleUPIRedirect = () => {
+  if (!formData.price) {
+    alert("Please select a category first.");
+    return;
+  }
+
+  const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${formData.price}&cu=INR`;
+
+  // Use direct navigation
+  window.location.href = upiUrl;
+
+  setTimeout(() => {
+    alert("If UPI app didn’t open, please make sure you have Google Pay or PhonePe installed.");
+  }, 3000);
+};
+
   const handleSubmit = async () => {
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
@@ -257,56 +274,51 @@ const TicketForm = () => {
       return;
     }
 
+    if (!formData.screenshot) {
+      alert("Please upload the payment screenshot before submitting.");
+      return;
+    }
+
     setSubmitting(true);
+
     try {
       const formDataToSend = new FormData();
       Object.entries(formData).forEach(([key, val]) => {
         if (val) formDataToSend.append(key, val);
       });
 
-      const response = await fetch("https://placement-empire-backend-1.onrender.com/api/tickets", {
+      const res = await fetch("https://placement-empire-backend-1.onrender.com/api/tickets", {
         method: "POST",
         body: formDataToSend,
       });
 
-      if (!response.ok) {
-        const err = await response.text();
+      if (!res.ok) {
+        const err = await res.text();
         alert("Ticket generation failed: " + err);
         return;
       }
 
       alert("Ticket submitted successfully. Check your email.");
-      setFormData({ name: "", mobile: "", email: "", category: "", price: "", screenshot: null });
+      setFormData({
+        name: "",
+        mobile: "",
+        email: "",
+        category: "",
+        price: "",
+        screenshot: null,
+      });
       setErrors({});
-    } catch (error) {
-      console.error("Submit ticket error:", error);
-      alert("Failed to submit ticket.");
+    } catch (err) {
+      alert("Submission failed. Please try again.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleUPIRedirect = () => {
-    if (!formData.category || !formData.price) {
-      alert("Please select a category first");
-      return;
-    }
-    const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${formData.price}&cu=INR`;
-    const link = document.createElement("a");
-    link.href = upiUrl;
-    link.style.display = "none";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    setTimeout(() => {
-      alert("If no UPI app opened, please make sure your device has Google Pay or PhonePe installed.");
-    }, 5000);
-  };
-
   return (
     <form className="ticket-form" noValidate>
       <h2>Generate Ticket</h2>
+
       <input name="name" placeholder="Name" value={formData.name} onChange={handleChange} />
       {errors.name && <p className="error">{errors.name}</p>}
 
@@ -328,12 +340,14 @@ const TicketForm = () => {
 
       {formData.price && (
         <>
-          <p className="price-display">Pay ₹{formData.price} to UPI ID: {upiId}</p>
-          <button type="button" className="pay-now" onClick={handleUPIRedirect}>
-            Pay Now
-          </button>
+          <p className="price-display">Pay ₹{formData.price} to UPI ID: <strong>{upiId}</strong></p>
+          <button type="button" onClick={handleUPIRedirect} className="pay-now">Pay Now</button>
         </>
       )}
+<p className="notice">
+  After clicking <strong>Pay Now</strong>, your UPI app (Google Pay, PhonePe, etc.) should open automatically.
+  If not, open your UPI app and send ₹{formData.price} to <strong>{upiId}</strong> manually.
+</p>
 
       <label>Upload Payment Screenshot</label>
       <input type="file" name="screenshot" accept="image/*" onChange={handleChange} />
