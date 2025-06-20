@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import "../components/ticketForm.css";
+import "./ticketForm.css";
 
 const categoryPrices = {
   "Tech Job": 1500,
