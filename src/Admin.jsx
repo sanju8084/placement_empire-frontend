@@ -20,7 +20,7 @@ const Admin = () => {
       await fetch(`https://placement-empire-backend-1.onrender.com/api/admin/tickets/${id}`, {
         method: "DELETE",
       });
-      setTickets(tickets.filter((t) => t._id !== id));
+      setTickets((prev) => prev.filter((t) => t._id !== id));
     } catch (error) {
       alert("Delete failed");
     }
@@ -44,30 +44,45 @@ const Admin = () => {
               <th>Category</th>
               <th>Price</th>
               <th>Payment</th>
+              <th>Screenshot</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
             {tickets.map((ticket) => (
               <tr key={ticket._id}>
-                <td>{ticket.ticketNo}</td>
+                <td>{ticket.ticketNo || "N/A"}</td>
                 <td>{ticket.name}</td>
                 <td>{ticket.mobile}</td>
                 <td>{ticket.email}</td>
                 <td>{ticket.category}</td>
                 <td>₹{ticket.price}</td>
-                <td>{ticket.paymentStatus || "N/A"}</td>
+                <td>{ticket.paymentStatus || "Pending"}</td>
                 <td>
-                  <button onClick={() => deleteTicket(ticket._id)}>Delete</button>
+                  {ticket.screenshot ? (
+                    <a
+                      href={`https://placement-empire-backend-1.onrender.com/uploads/${ticket.screenshot}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View
+                    </a>
+                  ) : (
+                    "N/A"
+                  )}
+                </td>
+                <td>
+                  <button className="delete-btn" onClick={() => deleteTicket(ticket._id)}>
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-
       <button
-        style={{ marginBottom: "10px" }}
+        className="logout-btn"
         onClick={() => {
           localStorage.removeItem("isAdmin");
           window.location.reload();

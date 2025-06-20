@@ -196,7 +196,8 @@
 // };
 
 // export default TicketForm;
-
+// ==== React Component: TicketForm.js ====
+// TicketForm.jsx
 import React, { useState } from "react";
 import "./ticketForm.css";
 
@@ -206,7 +207,7 @@ const categoryPrices = {
   "Unskilled Job": 500,
 };
 
-const upiId = "8084224918@upi"; // Replace with your actual UPI ID
+const upiId = "sankayush@okaxis";
 const payeeName = "Placement Empire";
 
 const TicketForm = () => {
@@ -275,14 +276,7 @@ const TicketForm = () => {
       }
 
       alert("Ticket submitted successfully. Check your email.");
-      setFormData({
-        name: "",
-        mobile: "",
-        email: "",
-        category: "",
-        price: "",
-        screenshot: null,
-      });
+      setFormData({ name: "", mobile: "", email: "", category: "", price: "", screenshot: null });
       setErrors({});
     } catch (error) {
       console.error("Submit ticket error:", error);
@@ -291,30 +285,28 @@ const TicketForm = () => {
       setSubmitting(false);
     }
   };
-const handleUPIRedirect = () => {
-  if (!formData.category || !formData.price) {
-    alert("Please select a category first");
-    return;
-  }
 
-  const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${formData.price}&cu=INR`;
+  const handleUPIRedirect = () => {
+    if (!formData.category || !formData.price) {
+      alert("Please select a category first");
+      return;
+    }
+    const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${formData.price}&cu=INR`;
+    const link = document.createElement("a");
+    link.href = upiUrl;
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 
-  const link = document.createElement("a");
-  link.href = upiUrl;
-  link.style.display = "none";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-
-  setTimeout(() => {
-    alert("If no UPI app opened, please make sure your device has Google Pay or PhonePe installed.");
-  }, 5000);
-};
+    setTimeout(() => {
+      alert("If no UPI app opened, please make sure your device has Google Pay or PhonePe installed.");
+    }, 5000);
+  };
 
   return (
     <form className="ticket-form" noValidate>
       <h2>Generate Ticket</h2>
-
       <input name="name" placeholder="Name" value={formData.name} onChange={handleChange} />
       {errors.name && <p className="error">{errors.name}</p>}
 
