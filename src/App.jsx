@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import TicketForm from "./components/TicketForm";
-import Admin from "./components/Admin";
-import Login from "./components/Login";
+import TicketForm from "./TicketForm";
+import Admin from "./Admin";
+import Login from "./Login";
 import "./App.css";
 
 function App() {
