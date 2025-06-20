@@ -51,30 +51,26 @@ const Admin = () => {
           <tbody>
             {tickets.map((ticket) => (
               <tr key={ticket._id}>
-                <td>{ticket.ticketNo || "N/A"}</td>
+                <td>{ticket.ticketNo}</td>
                 <td>{ticket.name}</td>
                 <td>{ticket.mobile}</td>
                 <td>{ticket.email}</td>
                 <td>{ticket.category}</td>
                 <td>₹{ticket.price}</td>
-                <td>{ticket.paymentStatus || "Pending"}</td>
+                <td>{ticket.paymentStatus}</td>
                 <td>
-                  {ticket.screenshot ? (
-                    <a
-                      href={`https://placement-empire-backend-1.onrender.com/uploads/${ticket.screenshot}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      View
-                    </a>
-                  ) : (
-                    "N/A"
-                  )}
-                </td>
-                <td>
-                  <button className="delete-btn" onClick={() => deleteTicket(ticket._id)}>
-                    Delete
-                  </button>
+  {ticket.screenshot ? (
+    <a
+      href={`https://placement-empire-backend-1.onrender.com/uploads/${ticket.screenshot}`}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      View
+    </a>
+  ) : "N/A"}
+</td>
+<td>
+                  <button className="delete-btn" onClick={() => deleteTicket(ticket._id)}>Delete</button>
                 </td>
               </tr>
             ))}
@@ -87,9 +83,7 @@ const Admin = () => {
           localStorage.removeItem("isAdmin");
           window.location.reload();
         }}
-      >
-        Logout
-      </button>
+      >Logout</button>
     </div>
   );
 };

@@ -202,7 +202,7 @@ import React, { useState } from "react";
 import "./ticketForm.css";
 
 const categoryPrices = {
-  "Tech Job": 1,
+  "Tech Job": 1500,
   "Non Tech Job": 1000,
   "Unskilled Job": 500,
 };
@@ -252,20 +252,18 @@ const TicketForm = () => {
   };
 
   const handleUPIRedirect = () => {
-  if (!formData.price) {
-    alert("Please select a category first.");
-    return;
-  }
+    if (!formData.price) {
+      alert("Please select a category first.");
+      return;
+    }
 
-  const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${formData.price}&cu=INR`;
+    const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${formData.price}&cu=INR`;
+    window.location.href = upiUrl;
 
-  // Use direct navigation
-  window.location.href = upiUrl;
-
-  setTimeout(() => {
-    alert("If UPI app didn’t open, please make sure you have Google Pay or PhonePe installed.");
-  }, 3000);
-};
+    setTimeout(() => {
+      alert("If UPI app didn’t open, please open GPay/PhonePe and pay manually.");
+    }, 3000);
+  };
 
   const handleSubmit = async () => {
     const validationErrors = validate();
@@ -307,6 +305,7 @@ const TicketForm = () => {
         price: "",
         screenshot: null,
       });
+      document.querySelector('input[type="file"]').value = ""; // reset file input
       setErrors({});
     } catch (err) {
       alert("Submission failed. Please try again.");
@@ -344,10 +343,11 @@ const TicketForm = () => {
           <button type="button" onClick={handleUPIRedirect} className="pay-now">Pay Now</button>
         </>
       )}
-<p className="notice">
-  After clicking <strong>Pay Now</strong>, your UPI app (Google Pay, PhonePe, etc.) should open automatically.
-  If not, open your UPI app and send ₹{formData.price} to <strong>{upiId}</strong> manually.
-</p>
+
+      <p className="notice">
+        After clicking <strong>Pay Now</strong>, your UPI app should open.
+        If not, pay manually to <strong>{upiId}</strong>.
+      </p>
 
       <label>Upload Payment Screenshot</label>
       <input type="file" name="screenshot" accept="image/*" onChange={handleChange} />
