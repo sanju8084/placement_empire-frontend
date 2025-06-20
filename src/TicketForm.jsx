@@ -202,7 +202,7 @@ import React, { useState } from "react";
 import "./ticketForm.css";
 
 const categoryPrices = {
-  "Tech Job": 1500,
+  "Tech Job": 1,
   "Non Tech Job": 1000,
   "Unskilled Job": 500,
 };
