@@ -1,4 +1,4 @@
-
+// src/components/TicketForm.jsx
 import React, { useState } from "react";
 import "./ticketForm.css";
 
@@ -83,10 +83,10 @@ const TicketForm = () => {
     try {
       const formDataToSend = new FormData();
       Object.entries(formData).forEach(([key, val]) => {
-        if (val) formDataToSend.append(key, val);
+        formDataToSend.append(key, val);
       });
 
-      const res = await fetch("https://placement-empire-backend-1.onrender.com/api/tickets", {
+      const res = await fetch("http://localhost:5000/api/tickets", {
         method: "POST",
         body: formDataToSend,
       });
@@ -98,6 +98,7 @@ const TicketForm = () => {
       }
 
       alert("Ticket submitted successfully. Check your email.");
+
       setFormData({
         name: "",
         mobile: "",
@@ -106,7 +107,7 @@ const TicketForm = () => {
         price: "",
         screenshot: null,
       });
-      document.querySelector('input[type="file"]').value = ""; // reset file input
+      document.querySelector('input[type="file"]').value = "";
       setErrors({});
     } catch (err) {
       alert("Submission failed. Please try again.");
@@ -118,7 +119,6 @@ const TicketForm = () => {
   return (
     <form className="ticket-form" noValidate>
       <h2>Generate Ticket</h2>
-
       <input name="name" placeholder="Name" value={formData.name} onChange={handleChange} />
       {errors.name && <p className="error">{errors.name}</p>}
 
