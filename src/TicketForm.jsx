@@ -86,7 +86,7 @@ const TicketForm = () => {
         formDataToSend.append(key, val);
       });
 
-      const res = await fetch("http://localhost:5000/api/tickets", {
+      const res = await fetch("https://placement-empire-backend-1.onrender.com/api/tickets", {
         method: "POST",
         body: formDataToSend,
       });
