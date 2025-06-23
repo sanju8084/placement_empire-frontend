@@ -7,7 +7,7 @@ const Admin = () => {
 
   const fetchTickets = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/admin/tickets"); // FIXED: use http not https
+      const res = await fetch("https://placement-empire-backend-1.onrender.com/api/admin/tickets"); // FIXED: use http not https
       const data = await res.json();
       setTickets(data);
     } catch (error) {
@@ -18,7 +18,7 @@ const Admin = () => {
   const deleteTicket = async (id) => {
     if (!window.confirm("Are you sure you want to delete this ticket?")) return;
     try {
-      await fetch(`http://localhost:5000/api/admin/tickets/${id}`, {
+      await fetch(`https://placement-empire-backend-1.onrender.com/api/admin/tickets/${id}`, {
         method: "DELETE",
       });
       setTickets((prev) => prev.filter((t) => t._id !== id));
@@ -62,7 +62,7 @@ const Admin = () => {
                 <td>
                   {ticket.screenshot ? (
                     <a
-                      href={`http://localhost:5000/uploads/${ticket.screenshot}`} // FIXED
+                      href={`https://placement-empire-backend-1.onrender.com/uploads/${ticket.screenshot}`} // FIXED
                       target="_blank"
                       rel="noopener noreferrer"
                     >
