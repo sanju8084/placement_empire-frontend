@@ -8,7 +8,7 @@ const categoryPrices = {
   "Unskilled Job": 500,
 };
 
-const upiId = "7079887439@jio";
+const upiId = "7079887439@ybl";
 const payeeName = "Placement Empire";
 
 const TicketForm = () => {
